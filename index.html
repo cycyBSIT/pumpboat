@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PUMPBOAT · Magallanes–Butuan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0a2a44;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== 3D REALISTIC OCEAN WAVES ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(180deg, 
+                #0a2a44 0%, 
+                #0d3b5e 15%, 
+                #0f4a6e 30%, 
+                #1a6a8a 50%, 
+                #2a8aaa 70%, 
+                #3aaac0 85%,
+                #4abada 100%);
+            overflow: hidden;
+        }
+
+        .wave-layer {
+            position: absolute;
+            bottom: -15%;
+            left: -50%;
+            width: 200%;
+            height: 130%;
+            border-radius: 40% 40% 0 0 / 30% 30% 0 0;
+            transform-origin: bottom center;
+            will-change: transform;
+        }
+
+        .wave-1 {
+            background: radial-gradient(ellipse at 30% 80%, 
+                rgba(20, 80, 130, 0.9) 0%, 
+                rgba(10, 50, 90, 0.7) 40%, 
+                rgba(5, 30, 60, 0.5) 70%, 
+                transparent 100%);
+            animation: wave3D 14s ease-in-out infinite alternate;
+            transform: translate3d(0, 0, -30px) scale(1.15);
+            opacity: 0.6;
+        }
+        .wave-2 {
+            background: linear-gradient(90deg, 
+                rgba(30, 120, 180, 0.5) 0%, 
+                rgba(60, 180, 220, 0.4) 25%, 
+                rgba(100, 200, 240, 0.3) 50%, 
+                rgba(60, 180, 220, 0.4) 75%, 
+                rgba(30, 120, 180, 0.5) 100%);
+            animation: wave3D 18s ease-in-out infinite alternate;
+            animation-delay: -4s;
+            transform: translate3d(0, 0, -10px) scale(1.08);
+            opacity: 0.7;
+            border-radius: 35% 45% 0 0 / 25% 35% 0 0;
+        }
+        .wave-3 {
+            background: linear-gradient(120deg, 
+                rgba(100, 220, 255, 0.3) 0%, 
+                rgba(150, 240, 255, 0.4) 20%, 
+                rgba(200, 248, 255, 0.3) 40%, 
+                rgba(150, 240, 255, 0.4) 60%, 
+                rgba(100, 220, 255, 0.3) 80%, 
+                rgba(50, 200, 240, 0.2) 100%);
+            animation: wave3D 22s ease-in-out infinite alternate;
+            animation-delay: -8s;
+            transform: translate3d(0, 0, 10px) scale(1.12);
+            opacity: 0.8;
+            border-radius: 30% 50% 0 0 / 20% 40% 0 0;
+        }
+        .wave-4 {
+            background: radial-gradient(ellipse at 60% 70%, 
+                rgba(255, 255, 255, 0.2) 0%, 
+                rgba(255, 255, 255, 0.08) 25%, 
+                rgba(200, 248, 255, 0.05) 50%, 
+                transparent 80%);
+            animation: wave3D 10s ease-in-out infinite alternate;
+            animation-delay: -2s;
+            transform: translate3d(0, 0, 30px) scale(1.25);
+            opacity: 0.5;
+            border-radius: 25% 55% 0 0 / 15% 45% 0 0;
+        }
+
+        @keyframes wave3D {
+            0% { transform: translate3d(-12%, -8%, -30px) scale(1.15) rotateX(6deg) rotateY(-6deg); border-radius: 40% 30% 0 0 / 30% 20% 0 0; }
+            25% { transform: translate3d(-6%, -12%, -15px) scale(1.08) rotateX(4deg) rotateY(-4deg); border-radius: 35% 40% 0 0 / 25% 30% 0 0; }
+            50% { transform: translate3d(0%, -15%, 0px) scale(1) rotateX(0deg) rotateY(0deg); border-radius: 30% 45% 0 0 / 20% 35% 0 0; }
+            75% { transform: translate3d(6%, -12%, 15px) scale(1.08) rotateX(-4deg) rotateY(4deg); border-radius: 35% 40% 0 0 / 25% 30% 0 0; }
+            100% { transform: translate3d(12%, -8%, 30px) scale(1.15) rotateX(-6deg) rotateY(6deg); border-radius: 40% 30% 0 0 / 30% 20% 0 0; }
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: floatParticle 10s infinite ease-in-out;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+        @keyframes floatParticle {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.2; }
+            25% { transform: translateY(-40px) translateX(25px) scale(1.8); opacity: 0.9; }
+            50% { transform: translateY(-80px) translateX(-15px) scale(1.2); opacity: 0.5; }
+            75% { transform: translateY(-40px) translateX(35px) scale(1.5); opacity: 0.8; }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .app-container {
+            max-width: 850px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 60px 60px 40px 40px;
+            padding: 2rem 2rem 2rem;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        .app-container::-webkit-scrollbar { width: 6px; }
+        .app-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 20px; }
+        .app-container::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 20px; }
+
+        .brand-icon {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 80px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .brand-left { display: flex; align-items: center; gap: 1rem; }
+
+        .logo-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-wrap i.fa-ship {
+            font-size: 3.2rem;
+            color: #ffd966;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6));
+            background: rgba(255, 215, 0, 0.08);
+            padding: 10px 12px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            transform: rotate(-2deg);
+            animation: boatBob 3s ease-in-out infinite;
+        }
+
+        @keyframes boatBob {
+            0%, 100% { transform: rotate(-2deg) translateY(0); }
+            50% { transform: rotate(2deg) translateY(-8px); }
+        }
+
+        .logo-wrap .pumpboat-label {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #ffd966;
+            background: rgba(10, 42, 68, 0.9);
+            padding: 2px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+
+        .brand-text { line-height: 1.2; text-align: left; }
+        .brand-text span { font-size: 2rem; font-weight: 700; color: white; text-shadow: 0 4px 16px rgba(0,0,0,0.5); letter-spacing: 1px; }
+        .brand-text small { display: block; font-size: 0.85rem; font-weight: 400; color: #b6ddf5; text-shadow: 0 2px 10px rgba(0,0,0,0.3); letter-spacing: 0.3px; }
+
+        .admin-login-btn {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            color: #ffd966;
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+        }
+        .admin-login-btn:hover { background: rgba(255, 215, 0, 0.2); border-color: #ffd966; transform: scale(1.05); }
+
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .admin-modal.show { display: flex; }
+
+        .admin-modal-content {
+            background: rgba(10, 42, 68, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 40px;
+            max-width: 360px;
+            width: 90%;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+        }
+        .admin-modal-content h3 { color: #ffd966; font-size: 1.2rem; margin-bottom: 1.2rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .admin-modal-content .input-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 60px;
+            padding: 0.1rem 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 0.8rem;
+            transition: 0.2s;
+        }
+        .admin-modal-content .input-group:focus-within { border-color: #ffd966; background: rgba(255, 215, 0, 0.04); }
+        .admin-modal-content .input-group i { color: #90b8da; font-size: 1rem; width: 24px; }
+        .admin-modal-content input {
+            background: transparent;
+            border: none;
+            padding: 0.8rem 0.2rem;
+            width: 100%;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .admin-modal-content input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .admin-modal-content .btn-primary {
+            background: #ffd966;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #0a2a44;
+            cursor: pointer;
+            transition: 0.15s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 0.3rem;
+        }
+        .admin-modal-content .btn-primary:hover { background: #ffe082; transform: scale(1.02); }
+        .admin-modal-content .close-modal { color: rgba(255,255,255,0.3); float: right; font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
+        .admin-modal-content .close-modal:hover { color: white; }
+        .admin-modal-content .hint { margin-top: 0.8rem; text-align: center; color: rgba(255,255,255,0.3); font-size: 0.7rem; }
+
+        .schedule-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 1.8rem 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+            justify-content: space-between;
+        }
+
+        .schedule-header .left { display: flex; align-items: center; gap: 14px; }
+        .schedule-header i { font-size: 2.2rem; color: #7fc8f0; background: rgba(127, 200, 240, 0.08); padding: 10px 12px; border-radius: 50px; border: 1px solid rgba(127, 200, 240, 0.15); }
+        .schedule-header h2 { font-size: 1.6rem; font-weight: 600; color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+        .schedule-header h2 small { display: block; font-size: 0.85rem; font-weight: 400; color: #b6ddf5; }
+
+        .clock-date {
+            text-align: right;
+            color: white;
+            background: rgba(0,0,0,0.2);
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255,255,255,0.05);
+            min-width: 140px;
+        }
+        .clock-date .time { font-size: 1.2rem; font-weight: 700; color: #ffd966; }
+        .clock-date .date { font-size: 0.75rem; color: #b6ddf5; }
+        .clock-date .day { font-size: 0.8rem; color: #ffd966; font-weight: 600; }
+
+        .trip-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 60px;
+            padding: 0.8rem 1.4rem;
+            margin: 0.8rem 0;
+            border-left: 5px solid #ffd966;
+            transition: 0.15s;
+            backdrop-filter: blur(4px);
+        }
+        .trip-info { display: flex; flex-direction: column; gap: 4px; }
+        .trip-route { font-weight: 700; color: white; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .trip-route i { color: #ffd966; font-size: 1.2rem; }
+        .trip-meta { display: flex; flex-wrap: wrap; gap: 12px 24px; font-size: 0.9rem; color: #b6ddf5; }
+        .trip-meta i { width: 20px; color: #8db8da; }
+
+        .trip-status {
+            background: rgba(0, 220, 120, 0.15);
+            padding: 0.3rem 1.3rem;
+            border-radius: 60px;
+            color: #9bffb0;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 255, 150, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .trip-status.cancelled { background: rgba(255, 80, 80, 0.15); color: #ff9e9e; border-color: rgba(255, 80, 80, 0.1); }
+        .trip-status i { font-size: 0.9rem; }
+
+        .notification-badge {
+            background: rgba(255, 215, 0, 0.08);
+            border-radius: 60px;
+            padding: 0.6rem 1.4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 215, 0, 0.08);
+            margin-top: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+        .notification-badge i { color: #ffd966; font-size: 1.2rem; }
+        .notification-badge span { color: #e6f2fa; font-weight: 500; }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.6rem 1.4rem;
+            border-radius: 60px;
+            margin: 0.8rem 0 0.2rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .driver-info i { color: #7fc8f0; font-size: 1.2rem; }
+        .driver-info strong { color: white; font-weight: 500; }
+
+        .admin-panel {
+            margin-top: 1.2rem;
+            background: rgba(255, 215, 0, 0.05);
+            border-radius: 30px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            display: none;
+        }
+        .admin-panel.visible { display: block; }
+        .admin-panel h3 { color: #ffd966; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 10px; }
+        .admin-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .admin-btn {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+            min-width: 120px;
+        }
+        .admin-btn.bagyo { background: #ff6b6b; color: white; }
+        .admin-btn.holiday { background: #ffa94d; color: white; }
+        .admin-btn.normal { background: #51cf66; color: white; }
+        .admin-btn:hover { transform: scale(1.03); opacity: 0.9; }
+
+        .admin-post {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-post input {
+            flex: 1;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            min-width: 150px;
+        }
+        .admin-post input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .admin-post .post-btn {
+            padding: 0.7rem 1.5rem;
+            background: #ffd966;
+            color: #0a2a44;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-post .post-btn:hover { background: #ffe082; transform: scale(1.03); }
+        .admin-post-message { color: #ffd966; margin-top: 8px; font-size: 0.9rem; width: 100%; }
+
+        .calendar-section {
+            margin-top: 1.2rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 30px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        .calendar-header h3 { font-size: 1.1rem; font-weight: 600; }
+        .calendar-header i { color: #ffd966; font-size: 1.2rem; }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+        .calendar-grid .day-name { color: rgba(255,255,255,0.5); font-size: 0.7rem; font-weight: 600; padding: 4px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .calendar-grid .day {
+            color: rgba(255,255,255,0.7);
+            padding: 6px 2px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        .calendar-grid .day:hover { background: rgba(255,255,255,0.05); }
+        .calendar-grid .day.today { background: rgba(255, 215, 0, 0.15); color: #ffd966; font-weight: 700; border: 1px solid rgba(255, 215, 0, 0.2); }
+        .calendar-grid .day.event { color: #ffd966; }
+        .calendar-grid .day.event::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #ffd966; }
+        .calendar-grid .day.event-bagyo { color: #ff6b6b; }
+        .calendar-grid .day.event-bagyo::after { background: #ff6b6b; }
+        .calendar-grid .day.event-holiday { color: #ffa94d; }
+        .calendar-grid .day.event-holiday::after { background: #ffa94d; }
+        .calendar-grid .day.other-month { color: rgba(255,255,255,0.15); }
+        .calendar-nav { display: flex; gap: 10px; align-items: center; }
+        .calendar-nav button { background: rgba(255,255,255,0.05); border: none; color: white; padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+        .calendar-nav button:hover { background: rgba(255,255,255,0.1); }
+        .calendar-nav .month-label { color: white; font-weight: 600; min-width: 100px; text-align: center; }
+
+        .logout-area { display: flex; justify-content: flex-end; margin-top: 0.6rem; }
+        .btn-logout {
+            background: rgba(255, 80, 80, 0.10);
+            border: 1px solid rgba(255, 80, 80, 0.12);
+            color: #ffb3b3;
+            padding: 0.4rem 1.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-logout:hover { background: rgba(255, 80, 80, 0.2); border-color: #ff6b6b; color: white; }
+        .admin-badge { background: #ffd966; color: #0a2a44; padding: 2px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; margin-left: 8px; }
+        .footer-note { margin-top: 1rem; text-align: center; color: rgba(255,255,255,0.2); font-size: 0.75rem; letter-spacing: 0.5px; }
+
+        @media (max-width: 480px) {
+            .app-container { padding: 1.2rem; }
+            .brand-text span { font-size: 1.4rem; }
+            .trip-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .trip-status { align-self: flex-start; }
+            .calendar-grid { gap: 2px; }
+            .calendar-grid .day { font-size: 0.7rem; padding: 4px 1px; }
+            .admin-btn { min-width: 100px; }
+            .brand-icon { flex-direction: column; align-items: stretch; }
+            .admin-login-btn { align-self: flex-end; }
+            .schedule-header { flex-direction: column; align-items: stretch; }
+            .clock-date { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D OCEAN WAVES BACKGROUND -->
+    <div class="ocean-bg">
+        <div class="wave-layer wave-1"></div>
+        <div class="wave-layer wave-2"></div>
+        <div class="wave-layer wave-3"></div>
+        <div class="wave-layer wave-4"></div>
+        <div class="particles">
+            <div class="particle" style="top:15%;left:8%;animation-delay:0s;"></div>
+            <div class="particle" style="top:30%;left:20%;animation-delay:1.5s;"></div>
+            <div class="particle" style="top:10%;left:45%;animation-delay:2.8s;"></div>
+            <div class="particle" style="top:40%;left:65%;animation-delay:0.7s;"></div>
+            <div class="particle" style="top:20%;left:80%;animation-delay:3.3s;"></div>
+            <div class="particle" style="top:50%;left:12%;animation-delay:2.1s;"></div>
+            <div class="particle" style="top:60%;left:35%;animation-delay:1.2s;"></div>
+            <div class="particle" style="top:35%;left:88%;animation-delay:0.4s;"></div>
+            <div class="particle" style="top:70%;left:55%;animation-delay:3.8s;"></div>
+            <div class="particle" style="top:25%;left:30%;animation-delay:1.8s;"></div>
+            <div class="particle" style="top:45%;left:75%;animation-delay:2.5s;"></div>
+            <div class="particle" style="top:55%;left:45%;animation-delay:0.9s;"></div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL -->
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h3><i class="fas fa-crown"></i> Admin Login</h3>
+            <div class="input-group"><i class="fas fa-key"></i><input type="password" id="adminCode" placeholder="Enter Admin Code" /></div>
+            <button class="btn-primary" id="adminLoginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <div class="hint">Admin Code: <strong style="color:#ffd966;">PUMPBOAT2026</strong></div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="app-container" id="appContainer">
+        <div class="brand-icon">
+            <div class="brand-left">
+                <div class="logo-wrap">
+                    <i class="fas fa-ship"></i>
+                    <span class="pumpboat-label">⚓ PUMPBOAT</span>
+                </div>
+                <div class="brand-text">
+                    <span>PUMPBOAT</span>
+                    <small>Magallanes ↔ Butuan · Official Schedule</small>
+                </div>
+            </div>
+            <button class="admin-login-btn" id="showAdminLogin"><i class="fas fa-crown"></i> Admin</button>
+        </div>
+
+        <div class="schedule-card">
+            <div class="schedule-header">
+                <div class="left">
+                    <i class="fas fa-anchor"></i>
+                    <h2>Trips <small>daily schedule</small></h2>
+                </div>
+                <div class="clock-date">
+                    <div class="time" id="clockTime">00:00:00</div>
+                    <div class="day" id="clockDay">Monday</div>
+                    <div class="date" id="clockDate">June 29, 2026</div>
+                </div>
+            </div>
+
+            <!-- Trip 1 -->
+            <div class="trip-row" id="trip1">
+                <div class="trip-info">
+                    <div class="trip-route"><i class="fas fa-arrow-right"></i> Magallanes → Butuan</div>
+                    <div class="trip-meta"><i class="far fa-clock"></i> 06:30 AM · <i class="far fa-calendar-alt"></i> Daily</div>
+                </div>
+                <div class="trip-status" id="status1"><i class="fas fa-circle-check"></i> available</div>
+            </div>
+
+            <!-- Trip 2 -->
+            <div class="trip-row" id="trip2">
+                <div class="trip-info">
+                    <div class="trip-route"><i class="fas fa-arrow-left"></i> Butuan → Magallanes</div>
+                    <div class="trip-meta"><i class="far fa-clock"></i> 04:00 PM · <i class="far fa-calendar-alt"></i> Daily</div>
+                </div>
+                <div class="trip-status" id="status2"><i class="fas fa-circle-check"></i> available</div>
+            </div>
+
+            <div class="notification-badge" id="notificationBadge">
+                <i class="fas fa-bullhorn"></i>
+                <span id="notificationText">⛴️ Regular trips today — smooth sailing!</span>
+            </div>
+
+            <div class="driver-info">
+                <i class="fas fa-user-tie"></i>
+                <strong>👨‍✈️ Driver:</strong> <span id="driverName">Kapitan Juan Dela Cruz · 20 yrs exp</span>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div class="admin-panel" id="adminPanel">
+                <h3><i class="fas fa-crown"></i> Admin Control Panel <span class="admin-badge">ADMIN</span></h3>
+                <div class="admin-controls">
+                    <button class="admin-btn bagyo" id="adminBagyo"><i class="fas fa-wind"></i> Set Bagyo</button>
+                    <button class="admin-btn holiday" id="adminHoliday"><i class="fas fa-calendar-day"></i> Set Holiday</button>
+                    <button class="admin-btn normal" id="adminNormal"><i class="fas fa-sun"></i> Normal</button>
+                </div>
+                <div class="admin-post">
+                    <input type="text" id="adminPostInput" placeholder="Post announcement..." />
+                    <button class="post-btn" id="adminPostBtn"><i class="fas fa-pen"></i> Post</button>
+                </div>
+                <div class="admin-post-message" id="adminPostMessage"></div>
+            </div>
+
+            <!-- CALENDAR -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Calendar 2026</h3>
+                    <div class="calendar-nav">
+                        <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <span class="month-label" id="monthLabel">January 2026</span>
+                        <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="logout-area" id="logoutArea" style="display:none;">
+                <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="footer-note"><i class="fas fa-water"></i> 3D realistic ocean waves · always check trip status</div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- DATABASE ----------
+            const DB_KEY = 'pumpboat_users';
+            const SESSION_KEY = 'pumpboat_session';
+            const EVENTS_KEY = 'pumpboat_events';
+
+            // ADMIN CODE (only this code can access admin panel)
+            const ADMIN_CODE = 'PUMPBOAT2026';
+
+            function seedUsers() {
+                if (!localStorage.getItem(DB_KEY)) {
+                    localStorage.setItem(DB_KEY, JSON.stringify([{
+                        firstName: 'Admin',
+                        lastName: 'User',
+                        email: 'admin@bangka.com',
+                        password: 'admin123',
+                        isAdmin: true
+                    }]));
+                }
+            }
+            seedUsers();
+
+            function getUsers() { return JSON.parse(localStorage.getItem(DB_KEY) || '[]'); }
+            function getSession() { return localStorage.getItem(SESSION_KEY); }
+            function setSession(u) { localStorage.setItem(SESSION_KEY, u); }
+            function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+            function getEvents() { return JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); }
+            function saveEvents(e) { localStorage.setItem(EVENTS_KEY, JSON.stringify(e)); }
+
+            function addEvent(date, type, msg) {
+                const events = getEvents().filter(e => e.date !== date);
+                events.push({ date, type, message: msg, timestamp: new Date().toISOString() });
+                saveEvents(events);
+            }
+            function removeEvent(date) { saveEvents(getEvents().filter(e => e.date !== date)); }
+            function getEventForDate(date) { return getEvents().find(e => e.date === date); }
+
+            // ---------- UI REFS ----------
+            const status1 = document.getElementById('status1');
+            const status2 = document.getElementById('status2');
+            const notificationText = document.getElementById('notificationText');
+            const driverNameSpan = document.getElementById('driverName');
+            const adminPanel = document.getElementById('adminPanel');
+            const logoutArea = document.getElementById('logoutArea');
+            const adminPostMessage = document.getElementById('adminPostMessage');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            const clockTime = document.getElementById('clockTime');
+            const clockDay = document.getElementById('clockDay');
+            const clockDate = document.getElementById('clockDate');
+
+            const calendarGrid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('monthLabel');
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+
+            // ---------- STATE ----------
+            let currentMonth = new Date().getMonth();
+            let currentYear = new Date().getFullYear();
+
+            // ---------- CLOCK & DATE (auto-update) ----------
+            function updateClock() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const mins = String(now.getMinutes()).padStart(2, '0');
+                const secs = String(now.getSeconds()).padStart(2, '0');
+                clockTime.textContent = hours + ':' + mins + ':' + secs;
+
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                clockDay.textContent = days[now.getDay()];
+
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                clockDate.textContent = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+                // Auto-refresh calendar if day changes
+                const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+                const savedDate = localStorage.getItem('last_checked_date');
+                if (savedDate !== todayStr) {
+                    localStorage.setItem('last_checked_date', todayStr);
+                    updateTripStatus();
+                    renderCalendar(currentMonth, currentYear);
+                }
+            }
+
+            // ---------- TRIP STATUS ----------
+            function setTripStatus(status, customMsg) {
+                let t1 = true, t2 = true;
+                let msg = '⛴️ Regular trips today — smooth sailing!';
+                let driver = 'Kapitan Juan Dela Cruz · 20 yrs exp';
+
+                if (status === 'bagyo') {
+                    t1 = false; t2 = true;
+                    msg = customMsg || '⚠️ Trip Magallanes→Butuan suspended due to bagyo.';
+                    driver = 'Kapitan Juan Dela Cruz (standby)';
+                } else if (status === 'holiday') {
+                    t1 = true; t2 = false;
+                    msg = customMsg || '📅 Trip Butuan→Magallanes cancelled (holiday).';
+                    driver = 'Kapitan Maria Santos (on leave)';
+                } else {
+                    t1 = true; t2 = true;
+                    msg = customMsg || '⛴️ All trips available — smooth sailing!';
+                    driver = 'Kapitan Juan Dela Cruz · 20 yrs exp';
+                }
+
+                localStorage.setItem('trip_override', status);
+
+                status1.innerHTML = t1 ? '<i class="fas fa-circle-check"></i> available' : '<i class="fas fa-circle-xmark"></i> cancelled';
+                status1.className = 'trip-status' + (t1 ? '' : ' cancelled');
+
+                status2.innerHTML = t2 ? '<i class="fas fa-circle-check"></i> available' : '<i class="fas fa-circle-xmark"></i> cancelled';
+                status2.className = 'trip-status' + (t2 ? '' : ' cancelled');
+
+                notificationText.textContent = msg;
+                driverNameSpan.textContent = driver;
+
+                const today = new Date();
+                const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+                if (status === 'bagyo') addEvent(dateStr, 'bagyo', '🚢 Bagyo - ' + msg);
+                else if (status === 'holiday') addEvent(dateStr, 'holiday', '📅 Holiday - ' + msg);
+                else removeEvent(dateStr);
+
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            function updateTripStatus() {
+                const saved = localStorage.getItem('trip_override');
+                if (saved && saved !== 'normal') { setTripStatus(saved); return; }
+
+                const today = new Date();
+                const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+                const event = getEventForDate(dateStr);
+                if (event) { setTripStatus(event.type, event.message); return; }
+
+                // Auto: bagyo on 1st, holiday on 2nd, normal on 3rd
+                const day = today.getDate();
+                const mod = day % 3;
+                if (mod === 1) setTripStatus('bagyo');
+                else if (mod === 2) setTripStatus('holiday');
+                else setTripStatus('normal');
+            }
+
+            // ---------- CALENDAR ----------
+            function renderCalendar(month, year) {
+                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                monthLabel.textContent = monthNames[month] + ' ' + year;
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const daysInPrev = new Date(year, month, 0).getDate();
+
+                const today = new Date();
+                const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+                let html = '';
+                ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(n => html += `<div class="day-name">${n}</div>`);
+
+                const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+                for (let i = startOffset - 1; i >= 0; i--) html += `<div class="day other-month">${daysInPrev - i}</div>`;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+                    const isToday = dateStr === todayStr;
+                    const event = getEventForDate(dateStr);
+                    let cls = 'day';
+                    if (isToday) cls += ' today';
+                    if (event) {
+                        cls += ' event';
+                        if (event.type === 'bagyo') cls += ' event-bagyo';
+                        else if (event.type === 'holiday') cls += ' event-holiday';
+                    }
+                    const title = event ? `title="${event.message}"` : '';
+                    html += `<div class="${cls}" ${title}>${d}</div>`;
+                }
+
+                const total = startOffset + daysInMonth;
+                const remaining = (7 - (total % 7)) % 7;
+                for (let d = 1; d <= remaining; d++) html += `<div class="day other-month">${d}</div>`;
+
+                calendarGrid.innerHTML = html;
+            }
+
+            function changeMonth(delta) {
+                currentMonth += delta;
+                if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            // ---------- ADMIN ----------
+            function checkAdminSession() {
+                if (getSession()) {
+                    adminPanel.classList.add('visible');
+                    logoutArea.style.display = 'flex';
+                    return true;
+                } else {
+                    adminPanel.classList.remove('visible');
+                    logoutArea.style.display = 'none';
+                    return false;
+                }
+            }
+
+            function doAdminLogin(code) {
+                if (code === ADMIN_CODE) {
+                    setSession('Admin');
+                    checkAdminSession();
+                    document.getElementById('adminModal').classList.remove('show');
+                    document.getElementById('adminCode').value = '';
+                    updateTripStatus();
+                    renderCalendar(currentMonth, currentYear);
+                    return true;
+                } else {
+                    alert('Invalid admin code. Please use the correct code.');
+                    return false;
+                }
+            }
+
+            function doLogout() {
+                clearSession();
+                checkAdminSession();
+                updateTripStatus();
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            function adminPost(status, customMsg) {
+                if (status === 'bagyo') {
+                    setTripStatus('bagyo', customMsg || '⚠️ Trip Magallanes→Butuan suspended due to bagyo.');
+                    adminPostMessage.textContent = '✅ Posted: Bagyo announcement!';
+                    adminPostMessage.style.color = '#ff6b6b';
+                } else if (status === 'holiday') {
+                    setTripStatus('holiday', customMsg || '📅 Trip Butuan→Magallanes cancelled (holiday).');
+                    adminPostMessage.textContent = '✅ Posted: Holiday announcement!';
+                    adminPostMessage.style.color = '#ffa94d';
+                } else {
+                    setTripStatus('normal', customMsg || '⛴️ All trips available — smooth sailing!');
+                    adminPostMessage.textContent = '✅ Posted: Normal operations resumed.';
+                    adminPostMessage.style.color = '#51cf66';
+                }
+                setTimeout(() => adminPostMessage.textContent = '', 5000);
+            }
+
+            // ---------- EVENT LISTENERS ----------
+            document.getElementById('showAdminLogin').addEventListener('click', () => {
+                document.getElementById('adminModal').classList.add('show');
+            });
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('adminModal').classList.remove('show');
+            });
+            document.getElementById('adminModal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) document.getElementById('adminModal').classList.remove('show');
+            });
+            document.getElementById('adminLoginBtn').addEventListener('click', () => {
+                doAdminLogin(document.getElementById('adminCode').value.trim());
+            });
+            document.getElementById('adminCode').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') document.getElementById('adminLoginBtn').click();
+            });
+
+            document.getElementById('adminBagyo').addEventListener('click', () => {
+                const msg = prompt('Enter custom bagyo announcement:', '⚠️ Trip Magallanes→Butuan suspended due to bagyo.');
+                adminPost('bagyo', msg || undefined);
+            });
+            document.getElementById('adminHoliday').addEventListener('click', () => {
+                const msg = prompt('Enter custom holiday announcement:', '📅 Trip Butuan→Magallanes cancelled (holiday).');
+                adminPost('holiday', msg || undefined);
+            });
+            document.getElementById('adminNormal').addEventListener('click', () => {
+                const msg = prompt('Enter custom announcement:', '⛴️ All trips available — smooth sailing!');
+                adminPost('normal', msg || undefined);
+            });
+
+            document.getElementById('adminPostBtn').addEventListener('click', () => {
+                const msg = document.getElementById('adminPostInput').value.trim();
+                if (!msg) { alert('Please enter a message.'); return; }
+                let status = 'normal';
+                if (msg.toLowerCase().includes('bagyo') || msg.toLowerCase().includes('storm')) status = 'bagyo';
+                else if (msg.toLowerCase().includes('holiday') || msg.toLowerCase().includes('hol')) status = 'holiday';
+                setTripStatus(status, msg);
+                adminPostMessage.textContent = '✅ Posted: "' + msg + '"';
+                adminPostMessage.style.color = '#ffd966';
+                document.getElementById('adminPostInput').value = '';
+                setTimeout(() => adminPostMessage.textContent = '', 5000);
+            });
+
+            logoutBtn.addEventListener('click', doLogout);
+            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+
+            // ---------- INIT ----------
+            updateClock();
+            updateTripStatus();
+            renderCalendar(currentMonth, currentYear);
+            checkAdminSession();
+
+            // Auto-update clock every second
+            setInterval(updateClock, 1000);
+
+            // Auto-refresh trip status every 30 seconds
+            setInterval(() => {
+                if (getSession()) updateTripStatus();
+            }, 30000);
+
+        })();
+    </script>
+</body>
+</html>
